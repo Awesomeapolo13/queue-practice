@@ -1,0 +1,55 @@
+networks:
+  queue-practice:
+    name: queue-practice
+    driver: bridge
+
+services:
+  queue-practice-cli:
+    container_name: queue-practice-cli
+    networks:
+      - queue-practice
+    build:
+      context: ../../
+      dockerfile: ./.deployment/docker/php-cli/Dockerfile
+      args:
+        PUID: ${PUID}
+        PGID: ${PGID}
+        INSTALL_XDEBUG: ${INSTALL_XDEBUG}
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+    volumes:
+      - ./../../:/var/www/queue-practice
+
+  queue-practice-worker:
+    container_name: queue-practice-worker
+    networks:
+      - queue-practice
+    build:
+      context: ../../
+      dockerfile: ./.deployment/docker/php-cli/Dockerfile
+      args:
+        PUID: ${PUID}
+        PGID: ${PGID}
+        INSTALL_XDEBUG: ${INSTALL_XDEBUG}
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+    volumes:
+      - ./../../:/var/www/queue-practice
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.13.3-management
+    ports:
+      - ${RABBIT_PORT}:5672
+      - ${RABBIT_MANAGEMENT_PORT}:15672
+    networks:
+      - queue-practice
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
