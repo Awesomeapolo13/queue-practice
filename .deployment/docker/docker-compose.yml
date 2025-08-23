@@ -20,6 +20,8 @@ services:
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
+    depends_on:
+      - rabbitmq
     volumes:
       - ./../../:/var/www/queue-practice
 
@@ -39,12 +41,16 @@ services:
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
+    depends_on:
+      - rabbitmq
     volumes:
       - ./../../:/var/www/queue-practice
+      - ./supervisor/conf.d:/etc/supervisor/conf.d
+      - ./supervisor/logs:/var/log/supervisor
 
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:3.13.3-management
+    image: rabbitmq:4.1.3-management-alpine
     ports:
       - ${RABBIT_PORT}:5672
       - ${RABBIT_MANAGEMENT_PORT}:15672
@@ -53,3 +59,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-logs:/var/log/rabbitmq
+
+volumes:
+  rabbitmq-data:
+    driver: local
+  rabbitmq-logs:
+    driver: local
