@@ -31,7 +31,7 @@ services:
       - queue-practice
     build:
       context: ../../
-      dockerfile: ./.deployment/docker/php-cli/Dockerfile
+      dockerfile: ./.deployment/docker/php-worker/Dockerfile
       args:
         PUID: ${PUID}
         PGID: ${PGID}
@@ -46,7 +46,6 @@ services:
     volumes:
       - ./../../:/var/www/queue-practice
       - ./supervisor/conf.d:/etc/supervisor/conf.d
-      - ./supervisor/logs:/var/log/supervisor
 
   rabbitmq:
     container_name: rabbitmq

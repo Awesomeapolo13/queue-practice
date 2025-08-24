@@ -10,7 +10,8 @@ RUN apk add --no-cache --update \
     linux-headers \
     bash \
     rabbitmq-c-dev \
-    supervisor
+    supervisor \
+    py3-setuptools
 
 # Install PHP extensions
 RUN docker-php-ext-install sockets pcntl
@@ -52,8 +53,8 @@ WORKDIR /var/www/queue-practice
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy supervisor config
-COPY ./.deployment/docker/php-worker/supervisord.conf /etc/supervisor/supervisord.conf
+# Copy workers config
+COPY ./.deployment/docker/supervisor/conf.d/supervisord.conf /etc/supervisor/supervisord.conf
 
 USER www-data
 
@@ -62,7 +63,7 @@ RUN if [ -f "composer.lock" ]; then \
         composer install --no-interaction --optimize-autoloader; \
     fi
 
-USER root
+ENV PYTHONWARNINGS=ignore::UserWarning
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
 
