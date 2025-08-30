@@ -15,6 +15,8 @@ class ConfigService
             return [];
         }
 
-        return [];
+        $config = include $resultPath;
+
+        return is_array($config) ? $config : [];
     }
 }
