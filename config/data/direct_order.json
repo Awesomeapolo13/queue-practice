@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "comment": "Deliver after 7 p.m.",
+    "orderDate": "28.08.2025",
+    "items": [
+      {
+        "id": 1,
+        "name": "Filadelfia",
+        "count": 2,
+        "is_set": false
+      },
+      {
+        "id": 2,
+        "name": "Dragon",
+        "count": 1,
+        "is_set": false
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "comment": "We need a lot of sauce",
+    "orderDate": "28.08.2025",
+    "items": [
+      {
+        "id": 4,
+        "name": "Fried onion set",
+        "count": 1,
+        "is_set": true
+      }
+    ]
+  }
+]

@@ -17,6 +17,38 @@ make dc_up_build
 make com_i
 ```
 
+## Description
+
+Before start, you need to initiate a topology by this command:
+
+```shell
+make top_init
+```
+
+This command will create exchanges, queues and their bindings, according to `config/rabbitmq/topology.php` file. Now you can run commands to publish messages:
+
+1) To use a direct exchange:
+```shell
+make add_orders
+```
+
+2) To use a topic exchange:
+```shell
+make notify
+```
+
+3) To use a headers exchange:
+```shell
+make log_analitics
+```
+
+4) To use a fanout exchange
+```shell
+make send_system_event
+```
+
+Consumers 
+
 1) Поднять в контейнерах несколько очередей
 2) Создать несколько паблишеров с разным типом обменника
 3) 

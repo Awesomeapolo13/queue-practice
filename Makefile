@@ -22,9 +22,6 @@ dc_up:
 	${DOCKER_COMPOSE} up -d
 
 dc_up_build:
-	@if ! grep -q "BUILD_TARGET=" ./.deployment/docker/.env; then \
-		echo "BUILD_TARGET=development" >> ./.deployment/docker/.env; \
-	fi
 	${DOCKER_COMPOSE} up -d --build
 
 dc_ps:
@@ -49,3 +46,5 @@ com_i:
 	${DOCKER_EXEC_PHP} composer install
 com_r:
 	${DOCKER_EXEC_PHP} composer require
+add_order:
+	${DOCKER_EXEC_PHP} php public/index.php app:send-orders

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework;
 
+use Alogachev\Homework\Command\Handler\SentOrderHandler;
 use Alogachev\Homework\Command\InitTopologyCommand;
+use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
+use Alogachev\Homework\Rabbit\Consumer\DirectOrderCreatedConsumer;
+use Alogachev\Homework\Rabbit\Publisher\DirectOrderCreatedEventPublisher;
 use DI\Container;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerExceptionInterface;
@@ -65,6 +69,22 @@ class App
             InitTopologyCommand::class => create()->constructor(
                 $topology,
                 get(RabbitConnection::class)
+            ),
+            DirectOrderCreatedEventPublisher::class => create()->constructor(
+                $topology['bindings'][0]['exchange'],
+                $topology['bindings'][0]['routing_key'],
+                get(RabbitConnection::class),
+            ),
+            SendOrdersCommand::class => create()->constructor(
+                __DIR__ . '/../config/data/direct_order.json',
+                get(DirectOrderCreatedEventPublisher::class)
+            ),
+            DirectOrderCreatedConsumer::class => create()->constructor(
+                $topology['bindings'][0]['queue'],
+                get(RabbitConnection::class)
+            ),
+            SentOrderHandler::class => create()->constructor(
+                get(DirectOrderCreatedConsumer::class)
             )
         ]);
     }
@@ -77,6 +97,12 @@ class App
     {
         $this->application->add(
             $this->container->get(InitTopologyCommand::class)
+        );
+        $this->application->add(
+            $this->container->get(SendOrdersCommand::class)
+        );
+        $this->application->add(
+            $this->container->get(SentOrderHandler::class)
         );
     }
 }
