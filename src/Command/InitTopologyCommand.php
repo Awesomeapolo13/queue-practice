@@ -36,6 +36,7 @@ class InitTopologyCommand extends Command
             $this->createExchanges($channel, $output);
             $this->createQueues($channel, $output);
             $this->createBindings($channel, $output);
+            $channel->close();
         } catch (\Throwable $exception) {
             $output->writeln("Couldn't initiate a topology: " . $exception->getMessage());
 
