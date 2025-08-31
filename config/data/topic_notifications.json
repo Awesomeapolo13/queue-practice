@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "type": "sms",
+    "service": "barber",
+    "message": "Your appointment at 8.00 tomorrow"
+  },
+  {
+    "id": 2,
+    "type": "email",
+    "service": "fine",
+    "message": "You have a new fine about exceeding a speed limit"
+  },
+  {
+    "id": 3,
+    "type": "email",
+    "service": "markets",
+    "message": "Your card has not been ordered. Forgot about something?"
+  },
+  {
+    "id": 4,
+    "type": "sms",
+    "service": "personal",
+    "message": "Your appointment at 8.00 tomorrow"
+  }
+]

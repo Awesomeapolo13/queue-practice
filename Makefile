@@ -48,3 +48,9 @@ com_r:
 	${DOCKER_EXEC_PHP} composer require
 add_order:
 	${DOCKER_EXEC_PHP} php public/index.php app:send-orders
+send_notifications:
+    ${DOCKER_EXEC_PHP} php public/index.php app:send-notifications
+read_sms_notifications:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-notification sms
+read_email_notifications:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-notification email

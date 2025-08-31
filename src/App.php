@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework;
 
+use Alogachev\Homework\Command\Handler\NotificationHandler;
 use Alogachev\Homework\Command\Handler\SentOrderHandler;
 use Alogachev\Homework\Command\InitTopologyCommand;
+use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\DirectOrderCreatedConsumer;
+use Alogachev\Homework\Rabbit\Consumer\TopicEmailNotificationConsumer;
+use Alogachev\Homework\Rabbit\Consumer\TopicSMSNotificationConsumer;
 use Alogachev\Homework\Rabbit\Publisher\DirectOrderCreatedEventPublisher;
+use Alogachev\Homework\Rabbit\Publisher\TopicNotificationPublisher;
 use DI\Container;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerExceptionInterface;
@@ -70,6 +75,7 @@ class App
                 $topology,
                 get(RabbitConnection::class)
             ),
+
             DirectOrderCreatedEventPublisher::class => create()->constructor(
                 $topology['bindings'][0]['exchange'],
                 $topology['bindings'][0]['routing_key'],
@@ -85,7 +91,28 @@ class App
             ),
             SentOrderHandler::class => create()->constructor(
                 get(DirectOrderCreatedConsumer::class)
-            )
+            ),
+
+            TopicNotificationPublisher::class => create()->constructor(
+                $topology['bindings'][1]['exchange'],
+                get(RabbitConnection::class)
+            ),
+            TopicEmailNotificationConsumer::class => create()->constructor(
+                $topology['bindings'][1]['queue'],
+                get(RabbitConnection::class)
+            ),
+            TopicSMSNotificationConsumer::class => create()->constructor(
+                $topology['bindings'][2]['queue'],
+                get(RabbitConnection::class)
+            ),
+            NotificationHandler::class => create()->constructor(
+                get(TopicSMSNotificationConsumer::class),
+                get(TopicEmailNotificationConsumer::class)
+            ),
+            SendNotificationsCommand::class => create()->constructor(
+                __DIR__ . '/../config/data/topic_notifications.json',
+                get(TopicNotificationPublisher::class)
+            ),
         ]);
     }
 
@@ -98,11 +125,19 @@ class App
         $this->application->add(
             $this->container->get(InitTopologyCommand::class)
         );
+
         $this->application->add(
             $this->container->get(SendOrdersCommand::class)
         );
         $this->application->add(
             $this->container->get(SentOrderHandler::class)
+        );
+
+        $this->application->add(
+            $this->container->get(SendNotificationsCommand::class),
+        );
+        $this->application->add(
+            $this->container->get(NotificationHandler::class),
         );
     }
 }

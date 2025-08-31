@@ -34,7 +34,7 @@ make add_orders
 
 2) To use a topic exchange:
 ```shell
-make notify
+make send_notifications
 ```
 
 3) To use a headers exchange:
