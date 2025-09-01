@@ -96,7 +96,7 @@ return [
             'routing_key' => '',
             'headers' => [
                 'priority' => 'high',
-                'x-match' => 'any', // any или all
+                'x-match' => 'any',
             ],
         ],
         [

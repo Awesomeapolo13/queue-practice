@@ -6,6 +6,7 @@ namespace Alogachev\Homework\Command;
 
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
 use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Wire\AMQPTable;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -95,12 +96,11 @@ class InitTopologyCommand extends Command
             } else if ($routingKey !== '') {
                 $output->write(" with routing key: '{$routingKey}'");
             }
-
             $channel->queue_bind(
                 queue: $queue,
                 exchange: $exchange,
                 routing_key: $routingKey,
-                arguments: $binding['headers'] ?? []
+                arguments: new AMQPTable($binding['headers'] ?? [])
             );
         }
     }
