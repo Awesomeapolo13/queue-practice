@@ -54,3 +54,9 @@ read_sms_notifications:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-notification sms
 read_email_notifications:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-notification email
+send_analytics:
+    ${DOCKER_EXEC_PHP} php public/index.php app:send-analytics
+handle_normal_analytics:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-analytics normal
+handle_high_analytics:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-analytics high

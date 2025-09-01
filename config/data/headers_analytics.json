@@ -1,0 +1,50 @@
+[
+  {
+    "type": "conversion_event",
+    "name": "search",
+    "is_error": false,
+    "priority": "normal"
+  },
+  {
+    "type": "conversion_event",
+    "name": "empty_search",
+    "is_error": false,
+    "priority": "high"
+  },
+  {
+    "type": "conversion_event",
+    "name": "book",
+    "is_error": false,
+    "priority": "normal"
+  },
+  {
+    "type": "system_event",
+    "name": "database_troubles",
+    "is_error": true,
+    "priority": "high"
+  },
+  {
+    "type": "conversion_event",
+    "name": "unsuccess_payment",
+    "is_error": true,
+    "priority": "normal"
+  },
+  {
+    "type": "conversion_event",
+    "name": "success_payment",
+    "is_error": false,
+    "priority": "normal"
+  },
+  {
+    "type": "system_event",
+    "name": "exceeded_memory_limit",
+    "is_error": false,
+    "priority": "high"
+  },
+  {
+    "type": "conversion_event",
+    "name": "ticketed",
+    "is_error": false,
+    "priority": "normal"
+  }
+]

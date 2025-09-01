@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace Alogachev\Homework;
 
 use Alogachev\Homework\Command\Handler\NotificationHandler;
+use Alogachev\Homework\Command\Handler\PrioritizedAnalyticHandler;
 use Alogachev\Homework\Command\Handler\SentOrderHandler;
 use Alogachev\Homework\Command\InitTopologyCommand;
+use Alogachev\Homework\Command\SendAnalyticCommand;
 use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\DirectOrderCreatedConsumer;
+use Alogachev\Homework\Rabbit\Consumer\HighPriorityAnalyticConsumer;
+use Alogachev\Homework\Rabbit\Consumer\NormalPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicEmailNotificationConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicSMSNotificationConsumer;
 use Alogachev\Homework\Rabbit\Publisher\DirectOrderCreatedEventPublisher;
+use Alogachev\Homework\Rabbit\Publisher\HeadersAnalyticPublisher;
 use Alogachev\Homework\Rabbit\Publisher\TopicNotificationPublisher;
 use DI\Container;
 use Dotenv\Dotenv;
@@ -75,7 +80,7 @@ class App
                 $topology,
                 get(RabbitConnection::class)
             ),
-
+            // Direct exchange
             DirectOrderCreatedEventPublisher::class => create()->constructor(
                 $topology['bindings'][0]['exchange'],
                 $topology['bindings'][0]['routing_key'],
@@ -92,7 +97,7 @@ class App
             SentOrderHandler::class => create()->constructor(
                 get(DirectOrderCreatedConsumer::class)
             ),
-
+            // Topic exchange
             TopicNotificationPublisher::class => create()->constructor(
                 $topology['bindings'][1]['exchange'],
                 get(RabbitConnection::class)
@@ -113,6 +118,27 @@ class App
                 __DIR__ . '/../config/data/topic_notifications.json',
                 get(TopicNotificationPublisher::class)
             ),
+            // Headers exchange
+            HeadersAnalyticPublisher::class => create()->constructor(
+                $topology['bindings'][3]['exchange'],
+                get(RabbitConnection::class)
+            ),
+            HighPriorityAnalyticConsumer::class => create()->constructor(
+                $topology['bindings'][3]['queue'],
+                get(RabbitConnection::class)
+            ),
+            NormalPriorityAnalyticConsumer::class => create()->constructor(
+                $topology['bindings'][4]['queue'],
+                get(RabbitConnection::class)
+            ),
+            PrioritizedAnalyticHandler::class => create()->constructor(
+                get(HighPriorityAnalyticConsumer::class),
+                get(NormalPriorityAnalyticConsumer::class)
+            ),
+            SendAnalyticCommand::class => create()->constructor(
+                __DIR__ . '/../config/data/headers_analytics.json',
+                get(HeadersAnalyticPublisher::class)
+            )
         ]);
     }
 
@@ -138,6 +164,13 @@ class App
         );
         $this->application->add(
             $this->container->get(NotificationHandler::class),
+        );
+
+        $this->application->add(
+            $this->container->get(SendAnalyticCommand::class),
+        );
+        $this->application->add(
+            $this->container->get(PrioritizedAnalyticHandler::class),
         );
     }
 }

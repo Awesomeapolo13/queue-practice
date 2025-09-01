@@ -37,9 +37,20 @@ make add_orders
 make send_notifications
 ```
 
+To read messages from them:
+```shell
+make read_sms_notifications
+make read_email_notifications
+```
+
 3) To use a headers exchange:
 ```shell
-make log_analitics
+make send_analytics
+```
+To read messages from them:
+```shell
+make handle_normal_analytics
+make handle_high_analytics
 ```
 
 4) To use a fanout exchange

@@ -11,25 +11,24 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class NotificationHandler extends Command
+class PrioritizedAnalyticHandler extends Command
 {
     public function __construct(
-        private readonly ConsumerInterface $smsConsumer,
-        private readonly ConsumerInterface $emailConsumer,
+        private readonly ConsumerInterface $highPriorityConsumer,
+        private readonly ConsumerInterface $normalPriorityConsumer,
     ) {
-        parent::__construct('app:handler:handle-notification');
+        parent::__construct('app:handler:handle-analytics');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $type = $input->getArgument('type');
-        $output->writeln("Start consuming $type notifications");
-
+        $priority = $input->getArgument('priority');
+        $output->writeln("Start consuming analytics with $priority priority");
         try {
-            match ($type) {
-                'sms' => $this->smsConsumer->consume(),
-                'email' => $this->emailConsumer->consume(),
-                default => throw new \RuntimeException('Unknown notification type'),
+            match ($priority) {
+                'high' => $this->highPriorityConsumer->consume(),
+                'normal' => $this->normalPriorityConsumer->consume(),
+                default => throw new \RuntimeException('Unknown priority'),
             };
         } catch (AMQPTimeoutException $exception) {
             $output->writeln("Consuming stoped after timeout: " . $exception->getMessage());
@@ -44,6 +43,6 @@ class NotificationHandler extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('type', InputArgument::REQUIRED, 'Notification type');
+        $this->addArgument('priority', InputArgument::REQUIRED, 'Priority');
     }
 }
