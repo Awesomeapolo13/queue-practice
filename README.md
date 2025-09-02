@@ -58,8 +58,11 @@ make handle_high_analytics
 make send_audit
 ```
 
-Consumers 
+To read messages from them:
+```shell
+make handle_audit
+make handle_monitoring
+make handle_backup
+```
 
-1) Поднять в контейнерах несколько очередей
-2) Создать несколько паблишеров с разным типом обменника
-3) 
+
