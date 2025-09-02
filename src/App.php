@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework;
 
+use Alogachev\Homework\Command\Handler\FanoutAuditHandler;
 use Alogachev\Homework\Command\Handler\NotificationHandler;
 use Alogachev\Homework\Command\Handler\PrioritizedAnalyticHandler;
 use Alogachev\Homework\Command\Handler\SentOrderHandler;
 use Alogachev\Homework\Command\InitTopologyCommand;
 use Alogachev\Homework\Command\SendAnalyticCommand;
+use Alogachev\Homework\Command\SendAuditCommand;
 use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\DirectOrderCreatedConsumer;
+use Alogachev\Homework\Rabbit\Consumer\FanoutAuditConsumer;
+use Alogachev\Homework\Rabbit\Consumer\FanoutBackupConsumer;
+use Alogachev\Homework\Rabbit\Consumer\FanoutMonitoringConsumer;
 use Alogachev\Homework\Rabbit\Consumer\HighPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\NormalPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicEmailNotificationConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicSMSNotificationConsumer;
 use Alogachev\Homework\Rabbit\Publisher\DirectOrderCreatedEventPublisher;
+use Alogachev\Homework\Rabbit\Publisher\FanoutAuditPublisher;
 use Alogachev\Homework\Rabbit\Publisher\HeadersAnalyticPublisher;
 use Alogachev\Homework\Rabbit\Publisher\TopicNotificationPublisher;
 use DI\Container;
@@ -138,7 +144,33 @@ class App
             SendAnalyticCommand::class => create()->constructor(
                 __DIR__ . '/../config/data/headers_analytics.json',
                 get(HeadersAnalyticPublisher::class)
-            )
+            ),
+            // Fanout exchange
+            FanoutAuditPublisher::class => create()->constructor(
+                $topology['bindings'][5]['exchange'],
+                get(RabbitConnection::class)
+            ),
+            FanoutAuditConsumer::class => create()->constructor(
+                $topology['bindings'][5]['queue'],
+                get(RabbitConnection::class)
+            ),
+            FanoutMonitoringConsumer::class => create()->constructor(
+                $topology['bindings'][6]['queue'],
+                get(RabbitConnection::class)
+            ),
+            FanoutBackupConsumer::class => create()->constructor(
+                $topology['bindings'][7]['queue'],
+                get(RabbitConnection::class)
+            ),
+            FanoutAuditHandler::class => create()->constructor(
+                get(FanoutAuditConsumer::class),
+                get(FanoutMonitoringConsumer::class),
+                get(FanoutBackupConsumer::class)
+            ),
+            SendAuditCommand::class => create()->constructor(
+                __DIR__ . '/../config/data/audit_broadcast.json',
+                get(FanoutAuditPublisher::class)
+            ),
         ]);
     }
 
@@ -171,6 +203,13 @@ class App
         );
         $this->application->add(
             $this->container->get(PrioritizedAnalyticHandler::class),
+        );
+
+        $this->application->add(
+            $this->container->get(SendAuditCommand::class),
+        );
+        $this->application->add(
+            $this->container->get(FanoutAuditHandler::class),
         );
     }
 }

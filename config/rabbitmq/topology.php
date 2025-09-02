@@ -108,7 +108,7 @@ return [
                 'x-match' => 'any',
             ],
         ],
-        // 4. Fanout Exchange Bindings (routing_key игнорируется)
+        // 4. Fanout Exchange Bindings
         [
             'queue' => 'audit',
             'exchange' => 'fanout_broadcasts',
