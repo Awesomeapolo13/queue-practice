@@ -55,7 +55,7 @@ make handle_high_analytics
 
 4) To use a fanout exchange
 ```shell
-make send_system_event
+make send_audit
 ```
 
 Consumers 

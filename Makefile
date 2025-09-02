@@ -48,6 +48,8 @@ com_r:
 	${DOCKER_EXEC_PHP} composer require
 add_order:
 	${DOCKER_EXEC_PHP} php public/index.php app:send-orders
+handle_orders:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:sent-order
 send_notifications:
     ${DOCKER_EXEC_PHP} php public/index.php app:send-notifications
 read_sms_notifications:
@@ -60,3 +62,11 @@ handle_normal_analytics:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-analytics normal
 handle_high_analytics:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-analytics high
+send_audit:
+	${DOCKER_EXEC_PHP} php public/index.php app:send-audit
+handle_audit:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit audit
+handle_monitoring:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit monitoring
+handle_backup:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit backup
