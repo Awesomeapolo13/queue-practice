@@ -8,14 +8,27 @@ use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
-class DirectOrderCreatedEventPublisher extends BasePublisher
+abstract class BasePublisher implements PublisherInterface
 {
     public function __construct(
-        private readonly string $routingKey,
-        string $exchangeName,
-        RabbitConnection $connection,
+        protected readonly string $exchangeName,
+        protected readonly RabbitConnection $connection,
     ) {
-        parent::__construct($exchangeName, $connection);
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function publish(array ...$messages): void
+    {
+        $channel = $this->connection->getChannel();
+        // Make a batch
+        foreach ($messages as $message) {
+            $this->sendInBatch($channel, $message);
+        }
+
+        $channel->publish_batch();
+        $channel->close();
     }
 
     protected function sendInBatch(AMQPChannel $channel, array $message): void
@@ -24,7 +37,6 @@ class DirectOrderCreatedEventPublisher extends BasePublisher
         $channel->batch_basic_publish(
             new AMQPMessage($encodedMessage),
             $this->exchangeName,
-            $this->routingKey
         );
     }
 }

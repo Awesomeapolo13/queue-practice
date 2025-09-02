@@ -88,8 +88,8 @@ class App
             ),
             // Direct exchange
             DirectOrderCreatedEventPublisher::class => create()->constructor(
-                $topology['bindings'][0]['exchange'],
                 $topology['bindings'][0]['routing_key'],
+                $topology['bindings'][0]['exchange'],
                 get(RabbitConnection::class),
             ),
             SendOrdersCommand::class => create()->constructor(
