@@ -21,14 +21,7 @@ class NotificationWithReplyToPublisher implements PublisherInterface
         protected readonly RabbitConnection $connection,
     ) {
         $channel = $this->connection->getChannel();
-        $channel->basic_consume(
-            queue: self::REPLY_TO_QUEUE_NAME,
-            no_ack: true,
-            callback: [
-                $this,
-                'onResponse'
-            ]
-        );
+
     }
 
     /**
@@ -37,6 +30,16 @@ class NotificationWithReplyToPublisher implements PublisherInterface
     public function publish(array ...$messages): void
     {
         $channel = $this->connection->getChannel();
+
+        $channel->basic_consume(
+            queue: self::REPLY_TO_QUEUE_NAME,
+            no_ack: true,
+            callback: [
+                $this,
+                'onResponse'
+            ]
+        );
+
         // Make a batch
         foreach ($messages as $message) {
             $this->sendInBatch($channel, $message);
@@ -45,10 +48,11 @@ class NotificationWithReplyToPublisher implements PublisherInterface
         $channel->publish_batch();
 
         while (!$this->isAllRepliesGot()) {
-            $channel->wait();
+            $channel->wait(null, false, 60);
         }
 
         $channel->close();
+        $this->connection->close();
     }
 
     public function onResponse(AMQPMessage $rep): void
@@ -57,7 +61,7 @@ class NotificationWithReplyToPublisher implements PublisherInterface
         echo "CorrelationId: {$correlationId}" . PHP_EOL;
         if (
             isset($this->correlationIdsWithReply[$correlationId])
-            && $this->correlationIdsWithReply[$correlationId] = ''
+            && $this->correlationIdsWithReply[$correlationId] === ''
         ) {
             $reply = $rep->getBody();
             $this->correlationIdsWithReply[$correlationId] = $reply;
@@ -85,6 +89,12 @@ class NotificationWithReplyToPublisher implements PublisherInterface
 
     private function isAllRepliesGot(): bool
     {
-        return array_all($this->correlationIdsWithReply, static fn($reply) => $reply !== '');
+        foreach ($this->correlationIdsWithReply as $reply) {
+            if ($reply === '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
