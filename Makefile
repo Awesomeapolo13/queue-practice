@@ -22,9 +22,6 @@ dc_up:
 	${DOCKER_COMPOSE} up -d
 
 dc_up_build:
-	@if ! grep -q "BUILD_TARGET=" ./.deployment/docker/.env; then \
-		echo "BUILD_TARGET=development" >> ./.deployment/docker/.env; \
-	fi
 	${DOCKER_COMPOSE} up -d --build
 
 dc_ps:
@@ -49,3 +46,27 @@ com_i:
 	${DOCKER_EXEC_PHP} composer install
 com_r:
 	${DOCKER_EXEC_PHP} composer require
+add_order:
+	${DOCKER_EXEC_PHP} php public/index.php app:send-orders
+handle_orders:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:sent-order
+send_notifications:
+    ${DOCKER_EXEC_PHP} php public/index.php app:send-notifications
+read_sms_notifications:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-notification sms
+read_email_notifications:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-notification email
+send_analytics:
+    ${DOCKER_EXEC_PHP} php public/index.php app:send-analytics
+handle_normal_analytics:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-analytics normal
+handle_high_analytics:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-analytics high
+send_audit:
+	${DOCKER_EXEC_PHP} php public/index.php app:send-audit
+handle_audit:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit audit
+handle_monitoring:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit monitoring
+handle_backup:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit backup

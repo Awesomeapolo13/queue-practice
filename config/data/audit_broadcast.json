@@ -1,0 +1,26 @@
+[
+  {
+    "event_name": "container_updated"
+  },
+  {
+    "event_name": "new_database_field"
+  },
+  {
+    "event_name": "updated_database_field"
+  },
+  {
+    "event_name": "created_new_container"
+  },
+  {
+    "event_name": "recreated_container"
+  },
+  {
+    "event_name": "removed_container"
+  },
+  {
+    "event_name": "removed_container"
+  },
+  {
+    "event_name": "up_new_database_replica"
+  }
+]

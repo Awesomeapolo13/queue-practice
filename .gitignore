@@ -1,3 +1,5 @@
 .env
 .idea/
 /vendor/
+/config/workers/supervisord/supervisord.pid
+/config/workers/supervisord/supervisord.sock
