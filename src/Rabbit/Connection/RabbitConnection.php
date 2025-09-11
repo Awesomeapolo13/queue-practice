@@ -37,4 +37,12 @@ class RabbitConnection
     {
         return $this->connection->channel();
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function close(): void
+    {
+        $this->connection->close();
+    }
 }
