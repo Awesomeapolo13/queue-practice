@@ -75,7 +75,8 @@ class InitTopologyCommand extends Command
                 queue: $name,
                 durable: $config['durable'],
                 exclusive: $config['exclusive'],
-                auto_delete: $config['auto_delete']
+                auto_delete: $config['auto_delete'],
+                arguments: $config['arguments'] ?? [],
             );
         }
     }
