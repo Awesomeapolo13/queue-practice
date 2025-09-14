@@ -65,4 +65,14 @@ make handle_monitoring
 make handle_backup
 ```
 
+6) To publish messages to calculation stream:
+```shell
+make send_calc_values
+```
 
+To read messages and make a calculation:
+```shell
+make handle_calc_avg
+make handle_calc_median
+make handle_calc_minmax
+```
