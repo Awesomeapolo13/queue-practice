@@ -18,6 +18,8 @@ use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\CalcAvgConsumer;
+use Alogachev\Homework\Rabbit\Consumer\CalcMedianConsumer;
+use Alogachev\Homework\Rabbit\Consumer\CalcMinAndMaxConsumer;
 use Alogachev\Homework\Rabbit\Consumer\DirectOrderCreatedConsumer;
 use Alogachev\Homework\Rabbit\Consumer\FanoutAuditConsumer;
 use Alogachev\Homework\Rabbit\Consumer\FanoutBackupConsumer;
@@ -186,10 +188,20 @@ class App
                 30,
                 get(RabbitConnection::class),
             ),
+            CalcMedianConsumer::class => create()->constructor(
+                $topology['bindings'][8]['queue'],
+                30,
+                get(RabbitConnection::class),
+            ),
+            CalcMinAndMaxConsumer::class => create()->constructor(
+                $topology['bindings'][8]['queue'],
+                30,
+                get(RabbitConnection::class),
+            ),
             CalculateValuesHandler::class => create()->constructor(
                 get(CalcAvgConsumer::class),
-                get(CalcAvgConsumer::class),
-                get(CalcAvgConsumer::class),
+                get(CalcMedianConsumer::class),
+                get(CalcMinAndMaxConsumer::class),
             ),
             CalcValuesCommand::class => create()->constructor(
                 __DIR__ . '/../config/data/stream_data.json',

@@ -6,7 +6,7 @@ namespace Alogachev\Homework\Rabbit\Consumer;
 
 use PhpAmqpLib\Message\AMQPMessage;
 
-class CalcAvgConsumer extends BaseStreamConsumer
+class CalcMinAndMaxConsumer extends BaseStreamConsumer
 {
     private int $count = 0;
     private float $sum = 0;
@@ -24,10 +24,10 @@ class CalcAvgConsumer extends BaseStreamConsumer
     protected function calcAndShowResult(): void
     {
         if ($this->count === 0) {
-            echo "[!] No consuming messages found." . PHP_EOL;
+            echo "[!] No consuming messages found.\n";
         } else {
             $avg = $this->sum / $this->count;
-            echo "[!] The average of consuming messages: {$avg}" . PHP_EOL;
+            echo "[!] The average of consuming messages: {$avg}\n";
         }
     }
 }
