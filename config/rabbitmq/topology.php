@@ -82,7 +82,7 @@ return [
             'exclusive' => false,
             'auto_delete' => false,
             'arguments' => [
-                'x-queue-type' => ['S', 'stream']
+                'x-queue-type' => 'stream'
             ]
         ]
     ],

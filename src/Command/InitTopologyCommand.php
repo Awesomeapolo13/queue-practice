@@ -76,7 +76,7 @@ class InitTopologyCommand extends Command
                 durable: $config['durable'],
                 exclusive: $config['exclusive'],
                 auto_delete: $config['auto_delete'],
-                arguments: $config['arguments'] ?? [],
+                arguments: isset($config['arguments']) ? new AMQPTable($config['arguments']) : new AMQPTable([]),
             );
         }
     }

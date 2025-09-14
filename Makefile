@@ -70,3 +70,11 @@ handle_monitoring:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit monitoring
 handle_backup:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:handle-audit backup
+send_calc_values:
+	${DOCKER_EXEC_PHP} php public/index.php app:send-calc-values
+handle_calc_avg:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:calc avg
+handle_calc_median:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:calc median
+handle_calc_minmax:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:calc minmax
