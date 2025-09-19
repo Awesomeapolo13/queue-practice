@@ -24,6 +24,12 @@ return [
             'durable' => true,
             'auto_delete' => false,
         ],
+        // stream direct
+        'stream_direct_exchange' => [
+            'type' => 'direct',
+            'durable' => true,
+            'auto_delete' => false,
+        ]
     ],
     'queues' => [
         // Direct exchange queue
@@ -69,6 +75,15 @@ return [
             'durable' => true,
             'exclusive' => false,
             'auto_delete' => false,
+        ],
+        // stream
+        'stream' => [
+            'durable' => true,
+            'exclusive' => false,
+            'auto_delete' => false,
+            'arguments' => [
+                'x-queue-type' => 'stream'
+            ]
         ],
         // Reply to queues
         'rpc_queue' => [
@@ -135,6 +150,12 @@ return [
             'exchange' => 'fanout_broadcasts',
             'routing_key' => '',
         ],
+        // 5. Stream
+        [
+            'queue' => 'stream',
+            'exchange' => 'stream_direct_exchange',
+            'routing_key' => 'calc.data',
+        ]
     ],
 ];
 

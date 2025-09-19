@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework;
 
+use Alogachev\Homework\Command\CalcValuesCommand;
+use Alogachev\Homework\Command\Handler\CalculateValuesHandler;
 use Alogachev\Homework\Command\Handler\FanoutAuditHandler;
 use Alogachev\Homework\Command\Handler\NotificationHandler;
 use Alogachev\Homework\Command\Handler\PrioritizedAnalyticHandler;
@@ -17,6 +19,9 @@ use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
+use Alogachev\Homework\Rabbit\Consumer\CalcAvgConsumer;
+use Alogachev\Homework\Rabbit\Consumer\CalcMedianConsumer;
+use Alogachev\Homework\Rabbit\Consumer\CalcMinAndMaxConsumer;
 use Alogachev\Homework\Rabbit\Consumer\DirectOrderCreatedConsumer;
 use Alogachev\Homework\Rabbit\Consumer\FanoutAuditConsumer;
 use Alogachev\Homework\Rabbit\Consumer\FanoutBackupConsumer;
@@ -26,6 +31,7 @@ use Alogachev\Homework\Rabbit\Consumer\NormalPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\NotificationWithReplyToConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicEmailNotificationConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicSMSNotificationConsumer;
+use Alogachev\Homework\Rabbit\Publisher\CalcValuePublisher;
 use Alogachev\Homework\Rabbit\Publisher\DirectOrderCreatedEventPublisher;
 use Alogachev\Homework\Rabbit\Publisher\FanoutAuditPublisher;
 use Alogachev\Homework\Rabbit\Publisher\HeadersAnalyticPublisher;
@@ -175,6 +181,36 @@ class App
                 __DIR__ . '/../config/data/audit_broadcast.json',
                 get(FanoutAuditPublisher::class)
             ),
+            // stream
+            CalcValuePublisher::class => create()->constructor(
+                $topology['bindings'][8]['routing_key'],
+                $topology['bindings'][8]['exchange'],
+                get(RabbitConnection::class),
+            ),
+            CalcAvgConsumer::class => create()->constructor(
+                $topology['bindings'][8]['queue'],
+                30,
+                get(RabbitConnection::class),
+            ),
+            CalcMedianConsumer::class => create()->constructor(
+                $topology['bindings'][8]['queue'],
+                30,
+                get(RabbitConnection::class),
+            ),
+            CalcMinAndMaxConsumer::class => create()->constructor(
+                $topology['bindings'][8]['queue'],
+                30,
+                get(RabbitConnection::class),
+            ),
+            CalculateValuesHandler::class => create()->constructor(
+                get(CalcAvgConsumer::class),
+                get(CalcMedianConsumer::class),
+                get(CalcMinAndMaxConsumer::class),
+            ),
+            CalcValuesCommand::class => create()->constructor(
+                __DIR__ . '/../config/data/stream_data.json',
+                get(CalcValuePublisher::class),
+            ),
             // Reply-to
             NotificationWithReplyToPublisher::class => create()->constructor(
                 get(RabbitConnection::class)
@@ -229,6 +265,13 @@ class App
         );
         $this->application->add(
             $this->container->get(FanoutAuditHandler::class),
+        );
+
+        $this->application->add(
+            $this->container->get(CalcValuesCommand::class),
+        );
+        $this->application->add(
+            $this->container->get(CalculateValuesHandler::class),
         );
 
         $this->application->add(

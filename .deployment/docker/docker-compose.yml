@@ -49,15 +49,20 @@ services:
 
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:4.1.3-management-alpine
+    build:
+      context: ../../
+      dockerfile: ./.deployment/docker/rabbitmq/Dockerfile
     ports:
       - ${RABBIT_PORT}:5672
       - ${RABBIT_MANAGEMENT_PORT}:15672
+      - ${RABBIT_STREAM_PORT}:5552
     networks:
       - queue-practice
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >-
+        -rabbitmq_stream advertised_host localhost
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
       - rabbitmq-logs:/var/log/rabbitmq
