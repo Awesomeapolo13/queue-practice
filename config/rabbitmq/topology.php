@@ -70,6 +70,17 @@ return [
             'exclusive' => false,
             'auto_delete' => false,
         ],
+        // Reply to queues
+        'rpc_queue' => [
+            'durable' => true,
+            'exclusive' => false,
+            'auto_delete' => false,
+        ],
+        'rpc_reply_to_queue' => [
+            'durable' => true,
+            'exclusive' => false,
+            'auto_delete' => false,
+        ],
     ],
     'bindings' => [
         // 1. Direct Exchange Bindings
