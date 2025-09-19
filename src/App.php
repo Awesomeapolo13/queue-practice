@@ -9,8 +9,10 @@ use Alogachev\Homework\Command\Handler\CalculateValuesHandler;
 use Alogachev\Homework\Command\Handler\FanoutAuditHandler;
 use Alogachev\Homework\Command\Handler\NotificationHandler;
 use Alogachev\Homework\Command\Handler\PrioritizedAnalyticHandler;
+use Alogachev\Homework\Command\Handler\ReplyToHandler;
 use Alogachev\Homework\Command\Handler\SentOrderHandler;
 use Alogachev\Homework\Command\InitTopologyCommand;
+use Alogachev\Homework\Command\ReplyToCommand;
 use Alogachev\Homework\Command\SendAnalyticCommand;
 use Alogachev\Homework\Command\SendAuditCommand;
 use Alogachev\Homework\Command\SendNotificationsCommand;
@@ -26,12 +28,14 @@ use Alogachev\Homework\Rabbit\Consumer\FanoutBackupConsumer;
 use Alogachev\Homework\Rabbit\Consumer\FanoutMonitoringConsumer;
 use Alogachev\Homework\Rabbit\Consumer\HighPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\NormalPriorityAnalyticConsumer;
+use Alogachev\Homework\Rabbit\Consumer\NotificationWithReplyToConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicEmailNotificationConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicSMSNotificationConsumer;
 use Alogachev\Homework\Rabbit\Publisher\CalcValuePublisher;
 use Alogachev\Homework\Rabbit\Publisher\DirectOrderCreatedEventPublisher;
 use Alogachev\Homework\Rabbit\Publisher\FanoutAuditPublisher;
 use Alogachev\Homework\Rabbit\Publisher\HeadersAnalyticPublisher;
+use Alogachev\Homework\Rabbit\Publisher\NotificationWithReplyToPublisher;
 use Alogachev\Homework\Rabbit\Publisher\TopicNotificationPublisher;
 use DI\Container;
 use Dotenv\Dotenv;
@@ -207,6 +211,21 @@ class App
                 __DIR__ . '/../config/data/stream_data.json',
                 get(CalcValuePublisher::class),
             ),
+            // Reply-to
+            NotificationWithReplyToPublisher::class => create()->constructor(
+                get(RabbitConnection::class)
+            ),
+            NotificationWithReplyToConsumer::class => create()->constructor(
+                'rpc_queue',
+                get(RabbitConnection::class)
+            ),
+            ReplyToHandler::class => create()->constructor(
+                get(NotificationWithReplyToConsumer::class),
+            ),
+            ReplyToCommand::class => create()->constructor(
+                __DIR__ . '/../config/data/topic_notifications.json',
+                get(NotificationWithReplyToPublisher::class)
+            ),
         ]);
     }
 
@@ -253,6 +272,13 @@ class App
         );
         $this->application->add(
             $this->container->get(CalculateValuesHandler::class),
+        );
+
+        $this->application->add(
+            $this->container->get(ReplyToCommand::class),
+        );
+        $this->application->add(
+            $this->container->get(ReplyToHandler::class),
         );
     }
 }

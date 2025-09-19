@@ -20,7 +20,7 @@ abstract class BaseConsumer implements ConsumerInterface
         $channel = $this->connection->getChannel();
         $channel->basic_consume(
             queue: $this->queueName,
-            no_ack: true,
+            no_ack: false,
             callback: [$this, 'handleMessage']
         );
 
@@ -29,6 +29,7 @@ abstract class BaseConsumer implements ConsumerInterface
         }
 
         $channel->close();
+        $this->connection->close();
     }
 
     abstract public function handleMessage(AmqpMessage $message): void;

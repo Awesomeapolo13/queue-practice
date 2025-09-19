@@ -46,6 +46,8 @@ com_i:
 	${DOCKER_EXEC_PHP} composer install
 com_r:
 	${DOCKER_EXEC_PHP} composer require
+top_init:
+	${DOCKER_EXEC_PHP} php public/index.php app:init-topology
 add_order:
 	${DOCKER_EXEC_PHP} php public/index.php app:send-orders
 handle_orders:
@@ -78,3 +80,7 @@ handle_calc_median:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:calc median
 handle_calc_minmax:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:calc minmax
+send_repl_to:
+	${DOCKER_EXEC_PHP} php public/index.php app:send-notifications-with-reply
+handle_repl_to:
+	${DOCKER_EXEC_PHP} php public/index.php app:handler:reply-to

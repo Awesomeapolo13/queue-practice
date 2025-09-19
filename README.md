@@ -65,7 +65,7 @@ make handle_monitoring
 make handle_backup
 ```
 
-6) To publish messages to calculation stream:
+5) To publish messages to calculation stream:
 ```shell
 make send_calc_values
 ```
@@ -75,4 +75,14 @@ To read messages and make a calculation:
 make handle_calc_avg
 make handle_calc_median
 make handle_calc_minmax
+```
+
+6) To use reply to functional run the command below. This command sends messages to `rpc_queue` and consume messages from `rpc_reply_to_queue` for one minute.
+```shell
+make send_repl_to
+```
+
+Then run a consumer command below to consume messages and publish replies to `rpc_reply_to_queue`.
+```shell
+make handle_repl_to
 ```
