@@ -7,7 +7,7 @@ namespace Alogachev\Homework\Rabbit\Connection;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
-class RabbitConnection
+class AMQPRabbitConnection
 {
     private readonly AMQPStreamConnection $connection;
 

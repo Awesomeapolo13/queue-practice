@@ -18,7 +18,7 @@ use Alogachev\Homework\Command\SendAuditCommand;
 use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
-use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\CalcAvgConsumer;
 use Alogachev\Homework\Rabbit\Consumer\CalcMedianConsumer;
 use Alogachev\Homework\Rabbit\Consumer\CalcMinAndMaxConsumer;
@@ -86,7 +86,7 @@ class App
         $topology = $configService->get('rabbitmq/topology');
 
         $this->container = new Container([
-            RabbitConnection::class => create()->constructor(
+            AMQPRabbitConnection::class => create()->constructor(
                 $rabbitHost,
                 (int) $rabbitPort,
                 $rabbitUser,
@@ -94,13 +94,13 @@ class App
             ),
             InitTopologyCommand::class => create()->constructor(
                 $topology,
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             // Direct exchange
             DirectOrderCreatedEventPublisher::class => create()->constructor(
                 $topology['bindings'][0]['routing_key'],
                 $topology['bindings'][0]['exchange'],
-                get(RabbitConnection::class),
+                get(AMQPRabbitConnection::class),
             ),
             SendOrdersCommand::class => create()->constructor(
                 __DIR__ . '/../config/data/direct_order.json',
@@ -108,7 +108,7 @@ class App
             ),
             DirectOrderCreatedConsumer::class => create()->constructor(
                 $topology['bindings'][0]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             SentOrderHandler::class => create()->constructor(
                 get(DirectOrderCreatedConsumer::class)
@@ -116,15 +116,15 @@ class App
             // Topic exchange
             TopicNotificationPublisher::class => create()->constructor(
                 $topology['bindings'][1]['exchange'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             TopicEmailNotificationConsumer::class => create()->constructor(
                 $topology['bindings'][1]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             TopicSMSNotificationConsumer::class => create()->constructor(
                 $topology['bindings'][2]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             NotificationHandler::class => create()->constructor(
                 get(TopicSMSNotificationConsumer::class),
@@ -137,15 +137,15 @@ class App
             // Headers exchange
             HeadersAnalyticPublisher::class => create()->constructor(
                 $topology['bindings'][3]['exchange'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             HighPriorityAnalyticConsumer::class => create()->constructor(
                 $topology['bindings'][3]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             NormalPriorityAnalyticConsumer::class => create()->constructor(
                 $topology['bindings'][4]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             PrioritizedAnalyticHandler::class => create()->constructor(
                 get(HighPriorityAnalyticConsumer::class),
@@ -158,19 +158,19 @@ class App
             // Fanout exchange
             FanoutAuditPublisher::class => create()->constructor(
                 $topology['bindings'][5]['exchange'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             FanoutAuditConsumer::class => create()->constructor(
                 $topology['bindings'][5]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             FanoutMonitoringConsumer::class => create()->constructor(
                 $topology['bindings'][6]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             FanoutBackupConsumer::class => create()->constructor(
                 $topology['bindings'][7]['queue'],
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             FanoutAuditHandler::class => create()->constructor(
                 get(FanoutAuditConsumer::class),
@@ -185,22 +185,22 @@ class App
             CalcValuePublisher::class => create()->constructor(
                 $topology['bindings'][8]['routing_key'],
                 $topology['bindings'][8]['exchange'],
-                get(RabbitConnection::class),
+                get(AMQPRabbitConnection::class),
             ),
             CalcAvgConsumer::class => create()->constructor(
                 $topology['bindings'][8]['queue'],
                 30,
-                get(RabbitConnection::class),
+                get(AMQPRabbitConnection::class),
             ),
             CalcMedianConsumer::class => create()->constructor(
                 $topology['bindings'][8]['queue'],
                 30,
-                get(RabbitConnection::class),
+                get(AMQPRabbitConnection::class),
             ),
             CalcMinAndMaxConsumer::class => create()->constructor(
                 $topology['bindings'][8]['queue'],
                 30,
-                get(RabbitConnection::class),
+                get(AMQPRabbitConnection::class),
             ),
             CalculateValuesHandler::class => create()->constructor(
                 get(CalcAvgConsumer::class),
@@ -213,11 +213,11 @@ class App
             ),
             // Reply-to
             NotificationWithReplyToPublisher::class => create()->constructor(
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             NotificationWithReplyToConsumer::class => create()->constructor(
                 'rpc_queue',
-                get(RabbitConnection::class)
+                get(AMQPRabbitConnection::class)
             ),
             ReplyToHandler::class => create()->constructor(
                 get(NotificationWithReplyToConsumer::class),
