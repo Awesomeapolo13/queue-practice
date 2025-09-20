@@ -56,6 +56,8 @@ services:
       - ${RABBIT_PORT}:5672
       - ${RABBIT_MANAGEMENT_PORT}:15672
       - ${RABBIT_STREAM_PORT}:5552
+      - ${RABBIT_MQTT_PORT}:1883
+      - ${RABBIT_MQTT_WS_PORT}:15675
     networks:
       - queue-practice
     environment:

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .sum-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            padding: 20px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .connected {
+            background: #2ecc71;
+            color: white;
+        }
+        .disconnected {
+            background: #e74c3c;
+            color: white;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<h1>MQTT Calculator - Showing the sum</h1>
+
+<div class="container">
+    <h3>Connection status</h3>
+    <div id="status" class="status disconnected">Отключен</div>
+</div>
+
+<div class="container">
+    <h3>Current sum</h3>
+    <div id="sum" class="sum-display">0</div>
+</div>
+
+<div class="container">
+    <h3>Sent a number to summarize it</h3>
+    <input type="number" id="numberInput" placeholder="Set a number" value="10">
+    <button onclick="sendNumber()">Отправить</button>
+    <button onclick="resetSum()">Сбросить сумму</button>
+</div>
+
+<div class="container">
+    <h3>Messages log</h3>
+    <div id="log" class="log"></div>
+</div>
+
+<!-- MQTT.js client from CDN -->
+<script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
+
+<script>
+    let client;
+    let currentSum = 0;
+
+    // Connection settings
+    const mqttConfig = {
+        hostname: 'localhost',
+        port: 15675,           // WebSocket
+        protocol: 'ws',        // or 'wss' for SSL
+        username: 'guest',
+        password: 'guest',
+        clientId: 'browser-client-' + Math.random().toString(16).substr(2, 8)
+    };
+
+    const topics = {
+        numbers: 'calculator/numbers',
+        sum: 'calculator/sum',
+        reset: 'calculator/reset'
+    };
+
+    // Connection to the broker
+    function connect() {
+        const url = `${mqttConfig.protocol}://${mqttConfig.hostname}:${mqttConfig.port}/ws`;
+
+        addLog(`Connected to ${url}...`);
+
+        client = mqtt.connect(url, {
+            username: mqttConfig.username,
+            password: mqttConfig.password,
+            clientId: mqttConfig.clientId,
+            clean: true,
+            reconnectPeriod: 5000,
+        });
+
+        client.on('connect', () => {
+            addLog('✅ Connected to MQTT broker');
+            document.getElementById('status').className = 'status connected';
+            document.getElementById('status').textContent = 'Connected';
+
+            // Подписываемся на топик с суммой
+            client.subscribe(topics.sum, { qos: 1 }, (err) => {
+                if (!err) {
+                    addLog(`📬 Subscribed on a topic: ${topics.sum}`);
+                }
+            });
+        });
+
+        client.on('message', (topic, message) => {
+            const payload = message.toString();
+            addLog(`📨 Got: [${topic}] ${payload}`);
+
+            if (topic === topics.sum) {
+                currentSum = parseFloat(payload);
+                updateSumDisplay();
+            }
+        });
+
+        client.on('error', (error) => {
+            addLog(`❌ Error: ${error.message}`);
+        });
+
+        client.on('close', () => {
+            addLog('🔌 Disconnected from a broker');
+            document.getElementById('status').className = 'status disconnected';
+            document.getElementById('status').textContent = 'Disconnected';
+        });
+    }
+
+    // Sending a number to sum
+    function sendNumber() {
+        const number = parseFloat(document.getElementById('numberInput').value);
+
+        if (isNaN(number)) {
+            addLog('⚠️ Set a correct number');
+            return;
+        }
+
+        if (client && client.connected) {
+            client.publish(topics.numbers, number.toString(), { qos: 1 }, (err) => {
+                if (!err) {
+                    addLog(`📤 Sent a number: ${number}`);
+                }
+            });
+        } else {
+            addLog('⚠️ Nas no broker connections');
+        }
+    }
+
+    // Reset the sum
+    function resetSum() {
+        if (client && client.connected) {
+            client.publish(topics.reset, 'true', { qos: 1 }, (err) => {
+                if (!err) {
+                    addLog('🔄 Sent a sum reset');
+                }
+            });
+        }
+    }
+
+    // Updating the sum
+    function updateSumDisplay() {
+        document.getElementById('sum').textContent = currentSum.toFixed(2);
+    }
+
+    // Добавление в лог
+    function addLog(message) {
+        const log = document.getElementById('log');
+        const timestamp = new Date().toLocaleTimeString();
+        log.innerHTML = `[${timestamp}] ${message}<br>` + log.innerHTML;
+    }
+
+    // Autoconnection while starting
+    window.onload = () => {
+        connect();
+    };
+
+    // Enter handling
+    document.getElementById('numberInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendNumber();
+        }
+    });
+</script>
+</body>
+</html>

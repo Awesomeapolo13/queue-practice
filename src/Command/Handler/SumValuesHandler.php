@@ -10,12 +10,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ReplyToHandler extends Command
+class SumValuesHandler extends Command
 {
     public function __construct(
         private readonly ConsumerInterface $consumer,
     ) {
-        parent::__construct('app:handler:reply-to');
+        parent::__construct('app:mqtt-sum-calculator');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
