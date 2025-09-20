@@ -27,7 +27,6 @@ class ReplyToHandler extends Command
             $output->writeln("Consuming stoped after timeout: " . $exception->getMessage());
         } catch (\Throwable $exception) {
             $output->writeln("Couldn't handle an notification: " . $exception->getMessage());
-            var_dump(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
 
             return Command::FAILURE;
         }
