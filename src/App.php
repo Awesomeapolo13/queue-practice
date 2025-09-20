@@ -11,6 +11,7 @@ use Alogachev\Homework\Command\Handler\NotificationHandler;
 use Alogachev\Homework\Command\Handler\PrioritizedAnalyticHandler;
 use Alogachev\Homework\Command\Handler\ReplyToHandler;
 use Alogachev\Homework\Command\Handler\SentOrderHandler;
+use Alogachev\Homework\Command\Handler\SumValuesHandler;
 use Alogachev\Homework\Command\InitTopologyCommand;
 use Alogachev\Homework\Command\ReplyToCommand;
 use Alogachev\Homework\Command\SendAnalyticCommand;
@@ -19,6 +20,7 @@ use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
 use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\MQTTRabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\CalcAvgConsumer;
 use Alogachev\Homework\Rabbit\Consumer\CalcMedianConsumer;
 use Alogachev\Homework\Rabbit\Consumer\CalcMinAndMaxConsumer;
@@ -29,6 +31,7 @@ use Alogachev\Homework\Rabbit\Consumer\FanoutMonitoringConsumer;
 use Alogachev\Homework\Rabbit\Consumer\HighPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\NormalPriorityAnalyticConsumer;
 use Alogachev\Homework\Rabbit\Consumer\NotificationWithReplyToConsumer;
+use Alogachev\Homework\Rabbit\Consumer\SumCalculationConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicEmailNotificationConsumer;
 use Alogachev\Homework\Rabbit\Consumer\TopicSMSNotificationConsumer;
 use Alogachev\Homework\Rabbit\Publisher\CalcValuePublisher;
@@ -80,18 +83,27 @@ class App
     {
         $rabbitHost = $_ENV['RABBIT_HOST'] ?? '';
         $rabbitPort = $_ENV['RABBIT_PORT'] ?? '';
+        $rabbitMQTTPort = $_ENV['RABBIT_MQTT_PORT'] ?? '';
         $rabbitUser = $_ENV['RABBIT_USER'] ?? '';
         $rabbitPassword = $_ENV['RABBIT_PASSWORD'] ?? '';
         $configService = new ConfigService();
         $topology = $configService->get('rabbitmq/topology');
 
         $this->container = new Container([
+            // Connections
             AMQPRabbitConnection::class => create()->constructor(
                 $rabbitHost,
                 (int) $rabbitPort,
                 $rabbitUser,
                 $rabbitPassword
             ),
+            MQTTRabbitConnection::class => create()->constructor(
+                $rabbitHost,
+                (int) $rabbitMQTTPort,
+                $rabbitUser,
+                $rabbitPassword
+            ),
+            // Init topology
             InitTopologyCommand::class => create()->constructor(
                 $topology,
                 get(AMQPRabbitConnection::class)
@@ -226,6 +238,13 @@ class App
                 __DIR__ . '/../config/data/topic_notifications.json',
                 get(NotificationWithReplyToPublisher::class)
             ),
+            // mqtt
+            SumCalculationConsumer::class => create()->constructor(
+                get(MQTTRabbitConnection::class),
+            ),
+            SumValuesHandler::class => create()->constructor(
+                get(SumCalculationConsumer::class),
+            ),
         ]);
     }
 
@@ -279,6 +298,10 @@ class App
         );
         $this->application->add(
             $this->container->get(ReplyToHandler::class),
+        );
+
+        $this->application->add(
+            $this->container->get(SumValuesHandler::class),
         );
     }
 }
