@@ -86,3 +86,8 @@ Then run a consumer command below to consume messages and publish replies to `rp
 ```shell
 make handle_repl_to
 ```
+
+7) To use a MQTT summarizing functional, you just need to open `public/index.html` file in your browser. But if you want to run a consumer from console, use a command below:
+```shell
+make handle_sum
+```

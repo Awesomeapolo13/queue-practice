@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Rabbit\Consumer;
 
-use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
@@ -12,9 +12,9 @@ use PhpAmqpLib\Wire\AMQPTable;
 abstract class BaseStreamConsumer implements ConsumerInterface
 {
     public function __construct(
-        private readonly string $streamName,
-        private readonly int $timeout,
-        private readonly RabbitConnection $connection,
+        private readonly string               $streamName,
+        private readonly int                  $timeout,
+        private readonly AMQPRabbitConnection $connection,
     ) {
     }
 

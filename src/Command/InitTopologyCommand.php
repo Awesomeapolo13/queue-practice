@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Command;
 
-use Alogachev\Homework\Rabbit\Connection\RabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Wire\AMQPTable;
 use Symfony\Component\Console\Command\Command;
@@ -14,8 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class InitTopologyCommand extends Command
 {
     public function __construct(
-        private readonly array $topology,
-        private readonly RabbitConnection $connection,
+        private readonly array                $topology,
+        private readonly AMQPRabbitConnection $connection,
     ) {
         parent::__construct('app:init-topology');
     }
