@@ -19,6 +19,8 @@ use Alogachev\Homework\Command\SendAuditCommand;
 use Alogachev\Homework\Command\SendNotificationsCommand;
 use Alogachev\Homework\Command\SendOrdersCommand;
 use Alogachev\Homework\Config\ConfigService;
+use Alogachev\Homework\Rabbit\Connection\AMQPClusterNode;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitClusterConnection;
 use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
 use Alogachev\Homework\Rabbit\Connection\MQTTRabbitConnection;
 use Alogachev\Homework\Rabbit\Consumer\CalcAvgConsumer;
@@ -81,27 +83,50 @@ class App
 
     private function loadDI(): void
     {
-        $rabbitHost = $_ENV['RABBIT_HOST'] ?? '';
-        $rabbitPort = $_ENV['RABBIT_PORT'] ?? '';
-        $rabbitMQTTPort = $_ENV['RABBIT_MQTT_PORT'] ?? '';
+        $rabbitHost1 = $_ENV['RABBIT_HOST1'] ?? '';
+        $rabbitPort1 = $_ENV['RABBIT_PORT1'] ?? '';
+        $rabbitMQTTPort1 = $_ENV['RABBIT_MQTT_PORT1'] ?? '';
         $rabbitUser = $_ENV['RABBIT_USER'] ?? '';
         $rabbitPassword = $_ENV['RABBIT_PASSWORD'] ?? '';
+        $rabbitVHost = $_ENV['RABBIT_VHOST'] ?? '/';
+        $clusterConnectionParams = [
+            new AMQPClusterNode(
+                $rabbitHost1,
+                $rabbitHost1
+            ),
+            new AMQPClusterNode(
+                $_ENV['RABBIT_HOST2'] ?? '',
+                    $_ENV['RABBIT_PORT2'] ?? ''
+            ),
+            new AMQPClusterNode(
+                $_ENV['RABBIT_HOST3'] ?? '',
+                    $_ENV['RABBIT_PORT3'] ?? ''
+            ),
+        ];
+
+
         $configService = new ConfigService();
         $topology = $configService->get('rabbitmq/topology');
 
         $this->container = new Container([
             // Connections
             AMQPRabbitConnection::class => create()->constructor(
-                $rabbitHost,
-                (int) $rabbitPort,
+                $rabbitHost1,
+                (int) $rabbitPort1,
                 $rabbitUser,
-                $rabbitPassword
+                $rabbitPassword,
             ),
             MQTTRabbitConnection::class => create()->constructor(
-                $rabbitHost,
-                (int) $rabbitMQTTPort,
+                $rabbitHost1,
+                (int) $rabbitMQTTPort1,
                 $rabbitUser,
-                $rabbitPassword
+                $rabbitPassword,
+            ),
+            AMQPRabbitClusterConnection::class => create()->constructor(
+                $rabbitUser,
+                $rabbitPassword,
+                $rabbitVHost,
+                $clusterConnectionParams,
             ),
             // Init topology
             InitTopologyCommand::class => create()->constructor(
