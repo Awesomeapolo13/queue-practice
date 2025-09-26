@@ -78,7 +78,7 @@ services:
       context: ../../
       dockerfile: ./.deployment/docker/rabbitmq/Dockerfile
     ports:
-      - 5673:5672
+      - ${RABBIT_PORT2}:5672
       - ${RABBIT_MANAGEMENT_PORT2}:15672
       - ${RABBIT_STREAM_PORT2}:5552
       - ${RABBIT_MQTT_PORT2}:1883
