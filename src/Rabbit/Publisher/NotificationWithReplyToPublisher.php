@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Rabbit\Publisher;
 
-use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnectionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -18,7 +18,7 @@ class NotificationWithReplyToPublisher implements PublisherInterface
     private array $correlationIdsWithReply = [];
 
     public function __construct(
-        protected readonly AMQPRabbitConnection $connection,
+        protected readonly AMQPRabbitConnectionInterface $connection,
     ) {
         $channel = $this->connection->getChannel();
 

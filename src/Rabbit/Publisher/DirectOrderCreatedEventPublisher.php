@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Rabbit\Publisher;
 
-use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnectionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -13,7 +13,7 @@ class DirectOrderCreatedEventPublisher extends BasePublisher
     public function __construct(
         private readonly string $routingKey,
         string                  $exchangeName,
-        AMQPRabbitConnection    $connection,
+        AMQPRabbitConnectionInterface $connection,
     ) {
         parent::__construct($exchangeName, $connection);
     }

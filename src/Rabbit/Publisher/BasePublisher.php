@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Rabbit\Publisher;
 
-use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnectionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -12,7 +12,7 @@ abstract class BasePublisher implements PublisherInterface
 {
     public function __construct(
         protected readonly string               $exchangeName,
-        protected readonly AMQPRabbitConnection $connection,
+        protected readonly AMQPRabbitConnectionInterface $connection,
     ) {
     }
 
