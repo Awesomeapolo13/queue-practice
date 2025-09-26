@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Command;
 
-use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnectionInterface;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Wire\AMQPTable;
 use Symfony\Component\Console\Command\Command;
@@ -15,7 +15,7 @@ class InitTopologyCommand extends Command
 {
     public function __construct(
         private readonly array                $topology,
-        private readonly AMQPRabbitConnection $connection,
+        private readonly AMQPRabbitConnectionInterface $connection,
     ) {
         parent::__construct('app:init-topology');
     }
@@ -38,6 +38,7 @@ class InitTopologyCommand extends Command
             $this->createQueues($channel, $output);
             $this->createBindings($channel, $output);
             $channel->close();
+            $this->connection->getConnection()->close();
         } catch (\Throwable $exception) {
             $output->writeln("Couldn't initiate a topology: " . $exception->getMessage());
 

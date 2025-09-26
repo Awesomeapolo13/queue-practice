@@ -21,7 +21,7 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
     depends_on:
-      - rabbitmq
+      - rabbitmq1
     volumes:
       - ./../../:/var/www/queue-practice
 
@@ -42,35 +42,97 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
     depends_on:
-      - rabbitmq
+      - rabbitmq1
     volumes:
       - ./../../:/var/www/queue-practice
       - ./supervisor/conf.d:/etc/supervisor/conf.d
 
-  rabbitmq:
-    container_name: rabbitmq
+  rabbitmq1:
+    container_name: rabbitmq1
+    hostname: rabbitmq1
     build:
       context: ../../
       dockerfile: ./.deployment/docker/rabbitmq/Dockerfile
     ports:
-      - ${RABBIT_PORT}:5672
-      - ${RABBIT_MANAGEMENT_PORT}:15672
-      - ${RABBIT_STREAM_PORT}:5552
-      - ${RABBIT_MQTT_PORT}:1883
-      - ${RABBIT_MQTT_WS_PORT}:15675
+      - ${RABBIT_PORT1}:5672
+      - ${RABBIT_MANAGEMENT_PORT1}:15672
+      - ${RABBIT_STREAM_PORT1}:5552
+      - ${RABBIT_MQTT_PORT1}:1883
+      - ${RABBIT_MQTT_WS_PORT1}:15675
     networks:
       - queue-practice
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-secret-cookie-please-change}
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >-
         -rabbitmq_stream advertised_host localhost
     volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-      - rabbitmq-logs:/var/log/rabbitmq
+      - rabbitmq1-data:/var/lib/rabbitmq
+      - rabbitmq1-logs:/var/log/rabbitmq
+
+  rabbitmq2:
+    container_name: rabbitmq2
+    hostname: rabbitmq2
+    build:
+      context: ../../
+      dockerfile: ./.deployment/docker/rabbitmq/Dockerfile
+    ports:
+      - ${RABBIT_PORT2}:5672
+      - ${RABBIT_MANAGEMENT_PORT2}:15672
+      - ${RABBIT_STREAM_PORT2}:5552
+      - ${RABBIT_MQTT_PORT2}:1883
+      - ${RABBIT_MQTT_WS_PORT2}:15675
+    networks:
+      - queue-practice
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-secret-cookie-please-change}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >-
+        -rabbitmq_stream advertised_host localhost
+    volumes:
+      - rabbitmq2-data:/var/lib/rabbitmq
+      - rabbitmq2-logs:/var/log/rabbitmq
+    depends_on:
+      - rabbitmq1
+
+  rabbitmq3:
+    container_name: rabbitmq3
+    hostname: rabbitmq3
+    build:
+      context: ../../
+      dockerfile: ./.deployment/docker/rabbitmq/Dockerfile
+    ports:
+      - ${RABBIT_PORT3}:5672
+      - ${RABBIT_MANAGEMENT_PORT3}:15672
+      - ${RABBIT_STREAM_PORT3}:5552
+      - ${RABBIT_MQTT_PORT3}:1883
+      - ${RABBIT_MQTT_WS_PORT3}:15675
+    networks:
+      - queue-practice
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD}
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-secret-cookie-please-change}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >-
+        -rabbitmq_stream advertised_host localhost
+    volumes:
+      - rabbitmq3-data:/var/lib/rabbitmq
+      - rabbitmq3-logs:/var/log/rabbitmq
+    depends_on:
+      - rabbitmq1
 
 volumes:
-  rabbitmq-data:
+  rabbitmq1-data:
     driver: local
-  rabbitmq-logs:
+  rabbitmq1-logs:
+    driver: local
+  rabbitmq2-data:
+    driver: local
+  rabbitmq2-logs:
+    driver: local
+  rabbitmq3-data:
+    driver: local
+  rabbitmq3-logs:
     driver: local

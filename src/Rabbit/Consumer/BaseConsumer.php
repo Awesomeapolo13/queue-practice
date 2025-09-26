@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Alogachev\Homework\Rabbit\Consumer;
 
-use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnection;
+use Alogachev\Homework\Rabbit\Connection\AMQPRabbitConnectionInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 
 abstract class BaseConsumer implements ConsumerInterface
 {
     public function __construct(
         private readonly string               $queueName,
-        private readonly AMQPRabbitConnection $connection,
+        private readonly AMQPRabbitConnectionInterface $connection,
     ) {
     }
 

@@ -1,12 +1,11 @@
-FROM rabbitmq:4.1.3-management-alpine
+FROM rabbitmq:3.13-management-alpine
 
-# Включаем необходимые плагины
 RUN rabbitmq-plugins enable rabbitmq_stream rabbitmq_mqtt rabbitmq_web_mqtt
 
-# Копируем конфигурационный файл если нужен
-# COPY rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+COPY ./.deployment/docker/rabbitmq/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+COPY ./.deployment/docker/rabbitmq/definitions.json /etc/rabbitmq/definitions.json
 
-# Экспонируем портов:
+# Ports export:
 # 5552 - stream protocol
 # 1883 - MQTT
 # 15675 - MQTT over WebSockets
