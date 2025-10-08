@@ -76,13 +76,8 @@ services:
       - queue-practice
     depends_on:
       - rabbitmq
-    environment:
-      - URI=amqp://${RABBIT_USER}:${RABBIT_PASSWORD}@rabbitmq:5672
-    # This container won`t be started by itself
     profiles:
       - testing
-    # Keeping container running for manual commands
-    entrypoint: ["tail", "-f", "/dev/null"]
 
 volumes:
   rabbitmq-data:
