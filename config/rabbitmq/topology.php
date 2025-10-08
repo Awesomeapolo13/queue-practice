@@ -37,6 +37,9 @@ return [
             'durable' => true,
             'exclusive' => false,
             'auto_delete' => false,
+            'arguments' => [
+                'x-queue-type' => 'quorum',
+            ]
         ],
         // Topic exchange queues
         'email_notifications' => [

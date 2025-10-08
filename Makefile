@@ -86,3 +86,15 @@ handle_repl_to:
 	${DOCKER_EXEC_PHP} php public/index.php app:handler:reply-to
 handle_sum:
 	${DOCKER_EXEC_PHP} php public/index.php app:mqtt-sum-calculator
+
+##################
+# PerfTest
+##################
+
+perf_test:
+	bash ./test/rabbitmq/run-perf-test.sh
+
+perf_run:
+	@echo "Запуск тестов..."
+	@make perf_test
+	@echo "Готово!"

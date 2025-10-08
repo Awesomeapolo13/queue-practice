@@ -69,6 +69,16 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
       - rabbitmq-logs:/var/log/rabbitmq
 
+  perf-test:
+    container_name: queue-practice-perf-test
+    image: pivotalrabbitmq/perf-test:latest
+    networks:
+      - queue-practice
+    depends_on:
+      - rabbitmq
+    profiles:
+      - testing
+
 volumes:
   rabbitmq-data:
     driver: local

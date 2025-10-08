@@ -91,3 +91,29 @@ make handle_repl_to
 ```shell
 make handle_sum
 ```
+
+8) To run perf-test run the command below and analyse throughput and latency results (Before run, you need to initialize the topology in 1sd command)
+```shell
+make perf_run
+```
+
+The results for my queues topology:
+
+| Metric                    | Classic    | Quorum       | Stream |
+|---------------------------|------------|--------------|--------|
+| **Throughput**  | 1014 msg/s | 1011 msg/s   | 1005 msg/s |
+| **Throughput** | 1014 msg/s | 977 msg/s ⚠️ | 1005 msg/s |
+| **Median latency**        | 159 µs 🏆  | 857 µs       | 300 µs |
+| **95th percentile latency** | 196 µs 🏆  | 1217 µs      | 349 µs |
+| **99th percentile latency** | 377 µs 🏆  | 1793 µs      | 468 µs |
+| **Max latency**           | 14049 µs   | 4893 µs      | 39025 µs |
+
+Testing params
+
+- **Producers:** 1
+- **Consumers:** 1
+- **Rate:** 1000 msg/s
+- **Message size:** 1000 bytes
+- **Prefetch (QoS):** 10
+- **Duration:** 60 seconds
+
